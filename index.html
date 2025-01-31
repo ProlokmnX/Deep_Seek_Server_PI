@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #output {
+            white-space: pre-wrap;
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <div id="output"></div>
+    <input type="text" id="user-message" placeholder="Type your message..." />
+    <button id="send-button">Send</button>
+</div>
+
+<script>
+    const sendButton = document.getElementById('send-button');
+    const userMessageInput = document.getElementById('user-message');
+    const outputDiv = document.getElementById('output');
+
+    sendButton.addEventListener('click', function() {
+        const userMessage = userMessageInput.value;
+        if (userMessage) {
+            userMessageInput.value = '';  // Clear input field
+            sendMessage(userMessage);
+        }
+    });
+
+    function sendMessage(message) {
+        fetch('/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ 'message': message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateOutput(data.response);
+        });
+    }
+
+    function updateOutput(response) {
+        outputDiv.textContent += '\n' + 'User: ' + response;  // Add user message
+        outputDiv.scrollTop = outputDiv.scrollHeight;  // Auto scroll to the bottom
+    }
+
+    function updateTerminalOutput() {
+        fetch('/get_output')
+        .then(response => response.json())
+        .then(data => {
+            outputDiv.textContent = data.output;
+        });
+    }
+
+    // Update terminal output every 1 second
+    setInterval(updateTerminalOutput, 1000);
+
+</script>
+
+</body>
+</html>
